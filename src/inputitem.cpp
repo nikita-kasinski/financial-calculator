@@ -1,7 +1,6 @@
 #include "../include/inputitem.h"
 
-InputItem::InputItem(QWidget* parent):QTextEdit(parent)
+InputItem::InputItem(QWidget* parent):QLineEdit(parent)
 {
-    setAcceptRichText(false);
-    setLineWrapMode(LineWrapMode::NoWrap);
+    setMaxLength(20);
 }

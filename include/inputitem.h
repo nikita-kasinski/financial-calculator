@@ -1,9 +1,9 @@
 #ifndef INPUTITEM_H
 #define INPUTITEM_H
 
-#include <QTextEdit>
+#include <QLineEdit>
 
-class InputItem : public QTextEdit
+class InputItem : public QLineEdit
 {
 public:
     InputItem(QWidget* parent = nullptr);
