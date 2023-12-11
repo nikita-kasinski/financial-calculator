@@ -9,7 +9,7 @@
 #include "QLabel"
 #include "QPushButton"
 #include "QRadioButton"
-#include <boost/multiprecision/cpp_dec_float.hpp>
+#include "QMessageBox"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     for (int i = 0; i < operatorAmount; ++i)
     {
         operators[i] = new OperatorItem(this);
+        connect(operators[i], &QComboBox::currentIndexChanged, this, &MainWindow::resetOutput);
     }
 
     output = new QLineEdit(this);
@@ -103,7 +104,96 @@ void MainWindow::resetOutput()
 
 void MainWindow::showResult()
 {
-    output->setText("0");
+    for(int i = 0; i < numberAmount; ++i)
+    {
+        if (numbers[i]->validate() != QValidator::State::Acceptable)
+        {
+            QMessageBox::warning(this, "Ошибка", "Некоторые введенные числа не валидны");
+            return;
+        }
+    }
+    bmp::cpp_dec_float_50 decimalNumbers[numberAmount];
+    for (int i = 0; i < numberAmount; ++i)
+    {
+        decimalNumbers[i] = parseFromString(numbers[i]->text());
+    }
+
+    bool bOk;
+    bmp::cpp_dec_float_50 result = calculate(decimalNumbers[1], decimalNumbers[2], static_cast<Operation>(operators[1]->currentIndex()), bOk);
+    if (!bOk)
+    {
+        return;
+    }
+
+    if (operators[0]->currentIndex() < 2 && operators[2]->currentIndex() >=2)
+    {
+        result = calculate(result, decimalNumbers[3], static_cast<Operation>(operators[2]->currentIndex()), bOk);
+        if (!bOk)
+        {
+            return;
+        }
+
+        result = calculate(decimalNumbers[0], result, static_cast<Operation>(operators[0]->currentIndex()), bOk);
+        if (!bOk)
+        {
+            return;
+        }
+    }
+    else
+    {
+        result = calculate(decimalNumbers[0], result, static_cast<Operation>(operators[0]->currentIndex()), bOk);
+        if (!bOk)
+        {
+            return;
+        }
+
+        result = calculate(result, decimalNumbers[3], static_cast<Operation>(operators[2]->currentIndex()), bOk);
+        if (!bOk)
+        {
+            return;
+        }
+    }
+    output->setText(QString::fromStdString(result.str()));
+}
+
+bmp::cpp_dec_float_50 MainWindow::parseFromString(const QString& stringValue)
+{
+    QString intermediate = stringValue;
+    intermediate.remove(" ");
+    intermediate.replace(",", ".");
+    return bmp::cpp_dec_float_50{intermediate.toStdString()};
+}
+
+bmp::cpp_dec_float_50 MainWindow::calculate(const bmp::cpp_dec_float_50& lhs, const bmp::cpp_dec_float_50& rhs, const Operation& operation, bool& outOk)
+{
+    bmp::cpp_dec_float_50 intermediate;
+    outOk = true;
+    switch(operation)
+    {
+        case Operation::Add:
+            intermediate = lhs + rhs;
+            break;
+        case Operation::Substract:
+            intermediate = lhs - rhs;
+            break;
+        case Operation::Multiply:
+            intermediate = lhs * rhs;
+            break;
+        case Operation::Divide:
+            if (rhs == 0)
+            {
+                QMessageBox::warning(this, "Ошибка", "Нельзя делить на ноль");
+                outOk = false;
+                return 0;
+            }
+            intermediate = lhs / rhs;
+    }
+    if (abs(intermediate) >= bmp::cpp_dec_float_50{1000000000000})
+    {
+        QMessageBox::warning(this, "Ошибка", "Переполнение");
+        outOk = false;
+    }
+    return intermediate;
 }
 
 void MainWindow::setRoundingNone()

@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QLineEdit>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+
+namespace bmp = boost::multiprecision;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,6 +33,18 @@ private slots:
     void setRoundingTruncate();
 
 private:
+    bmp::cpp_dec_float_50 parseFromString(const QString& stringValue);
+
+    enum class Operation
+    {
+        Add = 0,
+        Substract,
+        Multiply,
+        Divide
+    };
+
+    bmp::cpp_dec_float_50 calculate(const bmp::cpp_dec_float_50& lhs, const bmp::cpp_dec_float_50& rhs, const Operation& operation, bool& outOk);
+
     enum class RoundingPolicy
     {
         None,
