@@ -7,6 +7,7 @@
 #include "QRegularExpression"
 #include "QRegularExpressionValidator"
 #include "QLabel"
+#include "QPushButton"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,29 +24,46 @@ MainWindow::MainWindow(QWidget *parent)
     {
         operators[i] = new OperatorItem(this);
     }
+
     output = new QLineEdit(this);
     output->setReadOnly(true);
+
     QLabel* equals = new QLabel(this);
     equals->setText("=");
 
-    QHBoxLayout* line1 = new QHBoxLayout();
-    line1->addWidget(numbers[0]);
-    line1->addWidget(operators[0]);
-    line1->addWidget(numbers[1]);
-    line1->addWidget(operators[1]);
-    line1->addWidget(numbers[2]);
-    line1->addWidget(operators[2]);
-    line1->addWidget(numbers[3]);
-    line1->addWidget(equals);
-    line1->addWidget(output);
+    QPushButton* calculateButton = new QPushButton(this);
+    connect(calculateButton, &QPushButton::pressed, this, &MainWindow::showResult);
 
-    QHBoxLayout* line2 = new QHBoxLayout();
-    QGridLayout* layout = new QGridLayout();
-    layout->addLayout(line1, 0, 5);
+    QLabel* author = new QLabel(this);
+    author->setText("Подготовил Касинский Никита 12 группа");
+
+    QHBoxLayout* topLine = new QHBoxLayout;
+    topLine->addWidget(numbers[0]);
+    topLine->addWidget(operators[0]);
+    topLine->addWidget(numbers[1]);
+    topLine->addWidget(operators[1]);
+    topLine->addWidget(numbers[2]);
+    topLine->addWidget(operators[2]);
+    topLine->addWidget(numbers[3]);
+    topLine->addWidget(equals);
+    topLine->addWidget(output);
+
+    QHBoxLayout* middleLine = new QHBoxLayout;
+    middleLine->addWidget(calculateButton);
+
+    QHBoxLayout* bottomLine = new QHBoxLayout;
+    bottomLine->addStretch(1);
+    bottomLine->addWidget(author);
+
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->addStretch(1);
+    layout->addLayout(topLine);
+    layout->addLayout(middleLine);
+    layout->addStretch(1);
+    layout->addLayout(bottomLine);
     centralWidget()->setLayout(layout);
     setWindowTitle("Финансовый калькулятор");
-    QRegularExpression rx(R"((0|(-?[1-9]\d{0,2}(((\s\d{3})*)|(\d*))))([.,]\d+)?)");
-    QValidator *validator = new QRegularExpressionValidator(rx, this);
+    resize(1000, 600);
 }
 
 void MainWindow::resetOutput()
@@ -55,8 +73,9 @@ void MainWindow::resetOutput()
 
 void MainWindow::showResult()
 {
-
+    output->setText("0");
 }
+
 MainWindow::~MainWindow()
 {
     delete ui;
