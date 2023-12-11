@@ -48,19 +48,23 @@ MainWindow::MainWindow(QWidget *parent)
     QRadioButton* roundingNone = new QRadioButton(this);
     roundingNone->setText("Без округления");
     connect(roundingNone, &QRadioButton::toggled, this, &MainWindow::setRoundingNone);
+    connect(roundingNone, &QRadioButton::toggled, this, &MainWindow::resetOutput);
     roundingNone->toggle();
 
     QRadioButton* roundingMathematical = new QRadioButton(this);
     roundingMathematical->setText("Математическое");
     connect(roundingMathematical, &QRadioButton::toggled, this, &MainWindow::setRoundingMathematical);
+    connect(roundingMathematical, &QRadioButton::toggled, this, &MainWindow::resetOutput);
 
     QRadioButton* roundingBank = new QRadioButton(this);
     roundingBank->setText("Банковское");
     connect(roundingBank, &QRadioButton::toggled, this, &MainWindow::setRoundingBank);
+    connect(roundingBank, &QRadioButton::toggled, this, &MainWindow::resetOutput);
 
     QRadioButton* roundingTruncate = new QRadioButton(this);
     roundingTruncate->setText("Усечение");
     connect(roundingTruncate, &QRadioButton::toggled, this, &MainWindow::setRoundingTruncate);
+    connect(roundingTruncate, &QRadioButton::toggled, this, &MainWindow::resetOutput);
 
     QHBoxLayout* topLine = new QHBoxLayout;
     topLine->addWidget(numbers[0]);
@@ -94,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addLayout(bottomLine);
     centralWidget()->setLayout(layout);
     setWindowTitle("Финансовый калькулятор");
-    resize(1000, 600);
+    resize(1200, 600);
 }
 
 void MainWindow::resetOutput()
@@ -155,7 +159,7 @@ void MainWindow::showResult()
     }
 
     this->round(result);
-    QString resultSpaced = this->space(result);
+    QString resultSpaced = this->sanitize(result);
     output->setText(resultSpaced);
 }
 
@@ -170,11 +174,18 @@ void MainWindow::round(bmp::cpp_dec_float_50& value)
             break;
         case RoundingPolicy::Bank:
         {
-            value = floor(value);
-            std::string stringValue = value.str();
-            if ((stringValue[stringValue.length() - 1] - '0') %2 == 1)
+            if (value - floor(value) == 0.5)
             {
-                value += 1;
+                value = floor(value);
+                std::string stringValue = value.str();
+                if ((stringValue[stringValue.length() - 1] - '0') % 2 == 1)
+                {
+                    value += 1;
+                }
+            }
+            else
+            {
+                value = floor(value + 0.5);
             }
             break;
         }
@@ -183,9 +194,51 @@ void MainWindow::round(bmp::cpp_dec_float_50& value)
     }
 }
 
-QString MainWindow::space(const bmp::cpp_dec_float_50& value)
+QString MainWindow::sanitize(const bmp::cpp_dec_float_50& value)
 {
-    return QString::fromStdString(value.str());
+    QString rounded = QString::fromStdString(value.str(6, std::ios_base::fixed));
+    std::reverse(rounded.begin(), rounded.end());
+    QString spaced;
+    bool atLeastOneDigit = false;
+
+    int i = 0;
+    for (i = 0; i < rounded.length(); ++i)
+    {
+        if (rounded[i] == '.')
+        {
+            if (atLeastOneDigit)
+            {
+                spaced += rounded[i];
+            }
+            ++i;
+            break;
+        }
+
+        if (atLeastOneDigit)
+        {
+            spaced += rounded[i];
+        }
+        else
+        {
+            if (rounded[i].digitValue() > 0)
+            {
+                atLeastOneDigit = true;
+                spaced += rounded[i];
+            }
+        }
+    }
+
+    int dotPosition = i;
+    for(i; i < rounded.length(); ++i)
+    {
+        spaced += rounded[i];
+        if ((i + 1 - dotPosition) % 3 == 0)
+        {
+            spaced += ' ';
+        }
+    }
+    std::reverse(spaced.begin(), spaced.end());
+    return spaced;
 }
 
 bmp::cpp_dec_float_50 MainWindow::parseFromString(const QString& stringValue)

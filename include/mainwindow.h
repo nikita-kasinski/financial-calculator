@@ -47,7 +47,7 @@ private:
 
     void round(bmp::cpp_dec_float_50& value);
 
-    QString space(const bmp::cpp_dec_float_50& value);
+    QString sanitize(const bmp::cpp_dec_float_50& value);
 
     enum class RoundingPolicy
     {
