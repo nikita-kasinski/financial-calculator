@@ -45,6 +45,10 @@ private:
 
     bmp::cpp_dec_float_50 calculate(const bmp::cpp_dec_float_50& lhs, const bmp::cpp_dec_float_50& rhs, const Operation& operation, bool& outOk);
 
+    void round(bmp::cpp_dec_float_50& value);
+
+    QString space(const bmp::cpp_dec_float_50& value);
+
     enum class RoundingPolicy
     {
         None,

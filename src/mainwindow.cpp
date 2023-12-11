@@ -153,7 +153,39 @@ void MainWindow::showResult()
             return;
         }
     }
-    output->setText(QString::fromStdString(result.str()));
+
+    this->round(result);
+    QString resultSpaced = this->space(result);
+    output->setText(resultSpaced);
+}
+
+void MainWindow::round(bmp::cpp_dec_float_50& value)
+{
+    switch(roundingPolicy)
+    {
+        case RoundingPolicy::None:
+            break;
+        case RoundingPolicy::Mathematical:
+            value = floor(value + 0.5);
+            break;
+        case RoundingPolicy::Bank:
+        {
+            value = floor(value);
+            std::string stringValue = value.str();
+            if ((stringValue[stringValue.length() - 1] - '0') %2 == 1)
+            {
+                value += 1;
+            }
+            break;
+        }
+        case RoundingPolicy::Truncate:
+            value = floor(value);
+    }
+}
+
+QString MainWindow::space(const bmp::cpp_dec_float_50& value)
+{
+    return QString::fromStdString(value.str());
 }
 
 bmp::cpp_dec_float_50 MainWindow::parseFromString(const QString& stringValue)
@@ -188,7 +220,7 @@ bmp::cpp_dec_float_50 MainWindow::calculate(const bmp::cpp_dec_float_50& lhs, co
             }
             intermediate = lhs / rhs;
     }
-    if (abs(intermediate) >= bmp::cpp_dec_float_50{1000000000000})
+    if (abs(intermediate) > bmp::cpp_dec_float_50{1000000000000})
     {
         QMessageBox::warning(this, "Ошибка", "Переполнение");
         outOk = false;
