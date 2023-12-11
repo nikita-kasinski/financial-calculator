@@ -24,8 +24,21 @@ public:
 private slots:
     void showResult();
     void resetOutput();
+    void setRoundingNone();
+    void setRoundingMathematical();
+    void setRoundingBank();
+    void setRoundingTruncate();
 
 private:
+    enum class RoundingPolicy
+    {
+        None,
+        Mathematical,
+        Bank,
+        Truncate
+    };
+    RoundingPolicy roundingPolicy = RoundingPolicy::None;
+
     static constexpr const int numberAmount = 4;
     static constexpr const int operatorAmount = 3;
     InputItem* numbers[numberAmount];
