@@ -11,11 +11,13 @@ CONFIG += c++20
 SOURCES += \
     src/inputitem.cpp \
     src/main.cpp \
-    src/mainwindow.cpp
+    src/mainwindow.cpp \
+    src/operatoritem.cpp
 
 HEADERS += \
     include/inputitem.h \
-    include/mainwindow.h
+    include/mainwindow.h \
+    include/operatoritem.h
 
 FORMS += \
     ui/mainwindow.ui
