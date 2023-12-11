@@ -9,6 +9,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class InputItem;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -18,6 +20,10 @@ public:
     ~MainWindow();
 
 private:
+    InputItem* edit1;
+    InputItem* edit2;
+    InputItem* edit3;
+    InputItem* edit4;
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
